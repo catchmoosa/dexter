@@ -5,6 +5,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getChannelProfile } from './channels.js';
 import { dexterPath } from '../utils/paths.js';
+import { isPortfolioManagerEnabled } from '../tools/portfolio/config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -116,6 +117,25 @@ edit_file for memory files.
 - For daily notes, pass file="daily".
 - For edits/deletes, pass action="edit" or action="delete" with old_text.
 Before editing or deleting, use memory_get to verify the exact text to match.`;
+}
+
+/**
+ * Main-agent instructions for the portfolio_manager meta-tool (IB). Empty when IB is not configured.
+ */
+function buildPortfolioManagerSection(): string {
+  if (!isPortfolioManagerEnabled()) {
+    return '';
+  }
+
+  return `## Interactive Brokers portfolio (portfolio_manager)
+
+Use **portfolio_manager** when the user asks about **their Interactive Brokers** book: open positions, live holdings, or other IB **account** questions that require a connection to TWS or IB Gateway (API must be enabled).
+
+- **Not** a substitute for public-market or company data — use **get_financials** / **get_market_data** for those.
+- For **goals, risk tolerance, and stored preferences**, use **memory_search** when applicable; **portfolio_manager** returns **live** broker data.
+- **MVP:** only **read** operations exist (e.g. positions). Dexter does **not** place, cancel, or modify orders through this tool yet.
+
+`;
 }
 
 // ============================================================================
@@ -248,7 +268,7 @@ ${toolDescriptions}
 - Tool results are automatically capped. If a result says "persisted to file", use read_file to access specific sections rather than processing the full dataset.
 - Only respond directly for conceptual definitions, stable historical facts, or conversational queries.
 
-${buildSkillsSection()}
+${buildPortfolioManagerSection()}${buildSkillsSection()}
 
 ${buildMemorySection(memoryFiles ?? [], memoryContext)}
 

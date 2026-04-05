@@ -15,6 +15,12 @@ import { heartbeatTool, HEARTBEAT_TOOL_DESCRIPTION } from './heartbeat/heartbeat
 import { cronTool, CRON_TOOL_DESCRIPTION } from './cron/cron-tool.js';
 import { memoryGetTool, MEMORY_GET_DESCRIPTION, memorySearchTool, MEMORY_SEARCH_DESCRIPTION, memoryUpdateTool, MEMORY_UPDATE_DESCRIPTION } from './memory/index.js';
 import { discoverSkills } from '../skills/index.js';
+import {
+  createPortfolioManager,
+  PORTFOLIO_MANAGER_DESCRIPTION,
+  PORTFOLIO_MANAGER_COMPACT,
+  isPortfolioManagerEnabled,
+} from './portfolio/index.js';
 
 /**
  * A registered tool with its rich description for system prompt injection.
@@ -174,6 +180,16 @@ export function getToolRegistry(model: string): RegisteredTool[] {
       tool: xSearchTool,
       description: X_SEARCH_DESCRIPTION,
       compactDescription: 'Search X/Twitter for tweets, profiles, and threads.',
+      concurrencySafe: true,
+    });
+  }
+
+  if (isPortfolioManagerEnabled()) {
+    tools.push({
+      name: 'portfolio_manager',
+      tool: createPortfolioManager(model),
+      description: PORTFOLIO_MANAGER_DESCRIPTION,
+      compactDescription: PORTFOLIO_MANAGER_COMPACT,
       concurrencySafe: true,
     });
   }
